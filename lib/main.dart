@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -114,9 +115,9 @@ class _HomeViewState extends State<HomeView> {
   void onSaveForm() {
     if (pages.isNotEmpty) {
       bool allValid = true;
-      for (final form in pages) {
+      for (final multiFormWidget in pages) {
         // loop and check if all input fields a validated
-        allValid = allValid && form.isValid();
+        allValid = allValid && multiFormWidget.isValid();
       }
       if (allValid) {
         // all input fields is valid, get values
@@ -124,6 +125,14 @@ class _HomeViewState extends State<HomeView> {
 
         /// you can go ahead and furthur manipulate the data or make a network call to your API
         print('data: $data');
+        ScaffoldMessenger.of(context)
+            .showMaterialBanner(MaterialBanner(content: Text('$data'), actions: [
+          TextButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+              },
+              child: const Text('ok'))
+        ]));
       }
     }
   }
@@ -131,7 +140,7 @@ class _HomeViewState extends State<HomeView> {
 
 class Student {
   String? name;
-  int? age;
+  String? age;
 
   Student({this.name, this.age});
 }
@@ -155,6 +164,7 @@ class _MultiFormWidgetState extends State<MultiFormWidget> {
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final form = GlobalKey<FormState>();
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -181,10 +191,10 @@ class _MultiFormWidgetState extends State<MultiFormWidget> {
             key: form,
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 TextFormField(
                   controller: _nameController,
-                  onSaved: (val) => widget.student!.name = val!,
+                  onSaved: (val) => widget.student?.name = val,
                   style: Theme.of(context).textTheme.bodyText1,
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.name,
@@ -206,7 +216,7 @@ class _MultiFormWidgetState extends State<MultiFormWidget> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _ageController,
-                  onSaved: (val) => widget.student!.age = int.parse(val!),
+                  onSaved: (val) => widget.student?.age = val,
                   style: Theme.of(context).textTheme.bodyText1,
                   textInputAction: TextInputAction.done,
                   keyboardType: TextInputType.number,
@@ -232,7 +242,7 @@ class _MultiFormWidgetState extends State<MultiFormWidget> {
   }
 
   bool validate() {
-    var valid = form.currentState!.validate();
+    final valid = form.currentState!.validate();
     if (valid) form.currentState!.save();
     return valid;
   }
